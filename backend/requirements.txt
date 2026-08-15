@@ -1,0 +1,15 @@
+fastapi>=0.110.0
+uvicorn>=0.28.0
+dnspython>=2.6.0
+numpy>=1.24.0
+scikit-learn>=1.4.0
+lightgbm>=4.3.0
+onnxruntime>=1.17.0
+scapy>=2.5.0
+dpkt>=1.9.8
+requests>=2.31.0
+websockets>=12.0
+pydantic>=2.6.0
+python-multipart>=0.0.9
+cachetools>=5.3.3
+aiofiles>=23.2.1

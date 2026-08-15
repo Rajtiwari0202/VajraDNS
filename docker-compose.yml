@@ -1,0 +1,25 @@
+version: '3.8'
+
+services:
+  vajradns-backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: vajradns-backend
+    ports:
+      - "53:5353/udp"
+      - "8000:8000"
+    environment:
+      - PYTHONUNBUFFERED=1
+    restart: unless-stopped
+
+  vajradns-frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: vajradns-frontend
+    ports:
+      - "5173:5173"
+    depends_on:
+      - vajradns-backend
+    restart: unless-stopped
