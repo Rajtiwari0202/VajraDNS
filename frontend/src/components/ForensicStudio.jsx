@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { FileSearch, Upload, ShieldAlert, CheckCircle, Clock, ArrowRight, Server } from 'lucide-react';
+import { FileSearch, Upload, ShieldAlert, CheckCircle2, Clock, ArrowRight, Server, AlertTriangle, ShieldCheck, Download, Lock } from 'lucide-react';
 import { api } from '../services/api';
 
 export default function ForensicStudio() {
@@ -7,6 +7,7 @@ export default function ForensicStudio() {
   const [loading, setLoading] = useState(false);
   const [report, setReport] = useState(null);
   const [dragOver, setDragOver] = useState(false);
+  const [quarantinedIps, setQuarantinedIps] = useState(new Set());
 
   const handleFileUpload = async (file) => {
     if (!file) return;
@@ -49,10 +50,11 @@ export default function ForensicStudio() {
 1723450004.78	Cabc126	192.168.1.115	54324	192.168.1.1	53	udp	104	0.022	c2VjcmV0X3Bhc3N3b3JkX2V4Zmls.tunnel.darknet.cc	C_INTERNET	TXT	NOERROR	0.0.0.0	60
 1723450005.90	Cabc127	192.168.1.115	54325	192.168.1.1	53	udp	105	0.010	google.com	C_INTERNET	A	NOERROR	142.250.190.46	300
 1723450006.12	Cabc128	10.0.4.22	54326	192.168.1.1	53	udp	106	0.018	c2-cobaltstrike-listener.xyz	C_INTERNET	A	NOERROR	0.0.0.0	60
+1723450007.24	Cabc129	10.0.4.22	54327	192.168.1.1	53	udp	107	0.019	dga-locky-9938f.net	C_INTERNET	A	NOERROR	0.0.0.0	60
 `;
     try {
       const blob = new Blob([sampleZeek], { type: 'text/plain' });
-      const file = new File([blob], "incident_trace_dns.log");
+      const file = new File([blob], "APT29_DNS_Tunnel_Trace.log");
       const res = await api.uploadZeek(file);
       setReport(res);
     } catch (err) {
@@ -62,36 +64,50 @@ export default function ForensicStudio() {
     }
   };
 
+  const toggleQuarantine = (ip) => {
+    setQuarantinedIps(prev => {
+      const next = new Set(prev);
+      if (next.has(ip)) {
+        next.delete(ip);
+      } else {
+        next.add(ip);
+      }
+      return next;
+    });
+  };
+
   return (
     <div className="space-y-6">
-      {/* Header & Mode Switcher */}
-      <div className="surface-card p-5">
+      {/* Header Banner */}
+      <div className="card-panel p-6">
         <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-          <div className="flex items-center space-x-3">
-            <div className="w-8 h-8 rounded-lg bg-zinc-900 border border-white/10 flex items-center justify-center text-zinc-300">
-              <FileSearch className="w-4 h-4 text-emerald-400" />
+          <div className="flex items-center space-x-3.5">
+            <div className="w-10 h-10 rounded-xl bg-emerald-600/10 border border-emerald-500/30 flex items-center justify-center text-emerald-400 shadow-inner">
+              <FileSearch className="w-5 h-5" />
             </div>
             <div>
-              <h2 className="text-xs font-semibold uppercase tracking-wider text-zinc-200">
-                Passive Forensic Studio
+              <h2 className="text-sm font-semibold uppercase tracking-wider text-white">
+                Passive Incident Forensics & PCAP Analysis
               </h2>
-              <p className="text-[11px] text-zinc-400">Offline batch ingestion of PCAP wire captures and Zeek TSV logs</p>
+              <p className="text-xs text-zinc-400 mt-0.5">
+                Offline wire packet inspection, Zeek log extraction, C2 beacon correlation, and automated host isolation
+              </p>
             </div>
           </div>
 
-          <div className="flex items-center p-0.5 bg-zinc-900 rounded-lg border border-white/[0.06] text-xs font-medium">
+          <div className="flex items-center p-1 bg-[#131926] rounded-xl border border-white/[0.08] text-xs font-semibold">
             <button
               onClick={() => setActiveFileTab('PCAP')}
-              className={`px-3 py-1.5 rounded-md transition ${
-                activeFileTab === 'PCAP' ? 'bg-zinc-800 text-white shadow-sm' : 'text-zinc-400 hover:text-white'
+              className={`px-3.5 py-1.5 rounded-lg transition-all ${
+                activeFileTab === 'PCAP' ? 'bg-blue-600 text-white shadow-sm' : 'text-zinc-400 hover:text-white'
               }`}
             >
-              PCAP Capture
+              PCAP Wire Stream
             </button>
             <button
               onClick={() => setActiveFileTab('ZEEK')}
-              className={`px-3 py-1.5 rounded-md transition ${
-                activeFileTab === 'ZEEK' ? 'bg-zinc-800 text-white shadow-sm' : 'text-zinc-400 hover:text-white'
+              className={`px-3.5 py-1.5 rounded-lg transition-all ${
+                activeFileTab === 'ZEEK' ? 'bg-blue-600 text-white shadow-sm' : 'text-zinc-400 hover:text-white'
               }`}
             >
               Zeek Log TSV
@@ -99,29 +115,30 @@ export default function ForensicStudio() {
           </div>
         </div>
 
-        {/* Drag and Drop Zone */}
-        <div
-          onDragOver={(e) => { e.preventDefault(); setDragOver(true); }}
-          onDragLeave={() => setDragOver(false)}
-          onDrop={handleDrop}
-          className={`mt-5 border border-dashed rounded-xl p-8 text-center transition ${
-            dragOver ? 'border-blue-500 bg-blue-950/10' : 'border-white/10 bg-zinc-900/40 hover:border-white/20'
-          }`}
-        >
-          <div className="max-w-md mx-auto flex flex-col items-center">
-            <div className="w-10 h-10 rounded-lg bg-zinc-900 flex items-center justify-center text-zinc-400 mb-3 border border-white/10">
-              <Upload className="w-5 h-5" />
-            </div>
-            <h3 className="text-xs font-semibold text-zinc-200">
-              Drop your {activeFileTab === 'PCAP' ? '.pcap / .pcapng' : 'Zeek dns.log'} capture file here
-            </h3>
-            <p className="text-[11px] text-zinc-400 mt-1 mb-4">
-              Extracts DNS sessions, correlates C2 beaconing, and isolates compromised hosts.
-            </p>
+        {/* Dual Upload Section: Drag & Drop + Instant Incident Sandbox */}
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-5 mt-6">
+          {/* Dropzone */}
+          <div
+            onDragOver={(e) => { e.preventDefault(); setDragOver(true); }}
+            onDragLeave={() => setDragOver(false)}
+            onDrop={handleDrop}
+            className={`lg:col-span-8 border border-dashed rounded-xl p-7 text-center transition-all ${
+              dragOver ? 'border-blue-500 bg-blue-950/20' : 'border-white/10 bg-[#0B0F19]/60 hover:border-white/20'
+            }`}
+          >
+            <div className="max-w-md mx-auto flex flex-col items-center">
+              <div className="w-11 h-11 rounded-xl bg-zinc-900 flex items-center justify-center text-zinc-400 mb-3 border border-white/10 shadow-sm">
+                <Upload className="w-5 h-5 text-blue-400" />
+              </div>
+              <h3 className="text-sm font-semibold text-white">
+                Drag and drop your {activeFileTab === 'PCAP' ? '.pcap / .pcapng' : 'Zeek dns.log'} capture file
+              </h3>
+              <p className="text-xs text-zinc-400 mt-1 mb-5">
+                Automatically extracts DNS transactions, identifies malicious entropy, and flags compromised hosts.
+              </p>
 
-            <div className="flex items-center gap-2.5">
-              <label className="px-3.5 py-1.5 bg-zinc-100 hover:bg-white text-zinc-950 text-xs font-semibold rounded-lg cursor-pointer transition shadow-sm">
-                Select File
+              <label className="btn-primary cursor-pointer">
+                <span>Select File from Machine</span>
                 <input
                   type="file"
                   accept={activeFileTab === 'PCAP' ? '.pcap,.pcapng,.cap' : '.tsv,.log,.txt'}
@@ -129,110 +146,153 @@ export default function ForensicStudio() {
                   className="hidden"
                 />
               </label>
-
-              <button
-                onClick={runDemoAnalysis}
-                className="px-3.5 py-1.5 bg-zinc-800 hover:bg-zinc-700 text-zinc-200 text-xs font-medium rounded-lg transition border border-white/10"
-              >
-                Load Sample Incident Trace
-              </button>
             </div>
+          </div>
+
+          {/* Quick Incident Sandbox Card */}
+          <div className="lg:col-span-4 card-panel p-5 flex flex-col justify-between">
+            <div>
+              <div className="flex items-center space-x-2 text-rose-400 text-xs font-semibold uppercase tracking-wider mb-2">
+                <AlertTriangle className="w-4 h-4" />
+                <span>Pre-Packaged Incident Trace</span>
+              </div>
+              <h4 className="text-sm font-semibold text-white mb-1.5">APT29 Covert Tunneling Trace</h4>
+              <p className="text-xs text-zinc-400 leading-relaxed">
+                Contains simulated DNS tunneling payloads, Conficker algorithmic beacons, and sovereign ISRO queries.
+              </p>
+            </div>
+
+            <button
+              onClick={runDemoAnalysis}
+              disabled={loading}
+              className="mt-4 w-full btn-secondary text-xs font-semibold py-2.5"
+            >
+              <FileSearch className="w-4 h-4 text-emerald-400" />
+              <span>Load Sample Incident Trace</span>
+            </button>
           </div>
         </div>
       </div>
 
-      {/* Forensic Report Output */}
+      {/* Loading state */}
       {loading && (
-        <div className="surface-card p-10 text-center font-mono text-xs text-zinc-400">
-          <div className="inline-block w-5 h-5 border-2 border-zinc-400 border-t-transparent rounded-full animate-spin mb-2.5" />
-          <div>Parsing wire packets and running 4-Tier batch evaluation...</div>
+        <div className="card-panel p-10 text-center font-mono text-xs text-zinc-400">
+          <div className="inline-block w-6 h-6 border-2 border-blue-400 border-t-transparent rounded-full animate-spin mb-3" />
+          <div className="text-sm font-semibold text-white">Parsing wire packets through 4-Tier Engine...</div>
+          <div className="text-xs text-zinc-400 mt-1">Extracting DNS sessions and correlating C2 beacons</div>
         </div>
       )}
 
+      {/* Forensic Report Output */}
       {report && report.status === 'SUCCESS' && (
-        <div className="surface-card p-6 space-y-6">
+        <div className="card-panel p-6 space-y-6">
           {/* Top Summary Bar */}
-          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 pb-5 border-b border-white/[0.06]">
+          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 pb-5 border-b border-white/[0.08]">
             <div>
-              <div className="flex items-center gap-2">
-                <span className="text-[10px] font-mono font-semibold px-2 py-0.5 bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 rounded">
+              <div className="flex items-center gap-2.5">
+                <span className="px-2.5 py-0.5 text-xs font-mono font-bold uppercase rounded badge-emerald">
                   ANALYSIS COMPLETE
                 </span>
-                <span className="text-xs font-mono font-medium text-zinc-200">{report.filename}</span>
+                <span className="text-sm font-mono font-bold text-white">{report.filename}</span>
               </div>
-              <p className="text-[11px] text-zinc-400 mt-1">Parsed in {report.analysis_duration_sec}s</p>
+              <p className="text-xs text-zinc-400 mt-1">
+                Completed batch evaluation in <span className="text-emerald-400 font-mono font-semibold">{report.analysis_duration_sec}s</span>
+              </p>
             </div>
 
             <div className="flex items-center space-x-6 text-right font-mono text-xs">
               <div>
-                <span className="text-[10px] text-zinc-400 block">TOTAL RECORDS</span>
-                <span className="text-sm font-semibold text-zinc-200">{report.total_dns_records_parsed || report.total_dns_packets_parsed}</span>
+                <span className="text-[11px] text-zinc-400 uppercase block">Total Sessions</span>
+                <span className="text-lg font-bold text-white">{report.total_dns_records_parsed || report.total_dns_packets_parsed}</span>
               </div>
               <div className="border-l border-white/[0.08] pl-6">
-                <span className="text-[10px] text-zinc-400 block">MALICIOUS IDENTIFIED</span>
-                <span className="text-sm font-semibold text-rose-400">{report.malicious_queries_detected} ({report.threat_percentage}%)</span>
+                <span className="text-[11px] text-zinc-400 uppercase block">Malicious Detected</span>
+                <span className="text-lg font-bold text-rose-400">{report.malicious_queries_detected} ({report.threat_percentage}%)</span>
               </div>
             </div>
           </div>
 
           {/* Compromised Host Quarantine Cards */}
           <div>
-            <h3 className="text-xs font-semibold uppercase tracking-wider text-zinc-300 mb-3 flex items-center gap-1.5">
-              <ShieldAlert className="w-3.5 h-3.5 text-rose-400" />
-              Identified Compromised Endpoints
-            </h3>
+            <div className="flex items-center justify-between mb-3.5">
+              <h3 className="text-xs font-semibold uppercase tracking-wider text-white flex items-center gap-2">
+                <ShieldAlert className="w-4 h-4 text-rose-400" />
+                Identified Compromised Endpoints ({report.compromised_hosts?.length || 0})
+              </h3>
+              <span className="text-xs text-zinc-400 font-mono">Automated Zero-Trust Isolation</span>
+            </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-3 font-mono text-xs">
-              {report.compromised_hosts?.map((host, idx) => (
-                <div key={idx} className="p-3.5 bg-zinc-900/80 border border-white/[0.06] rounded-lg flex items-center justify-between">
-                  <div>
-                    <div className="flex items-center gap-2">
-                      <span className="text-xs font-semibold text-zinc-100">{host.ip}</span>
-                      <span className="text-[10px] px-1.5 py-0.2 bg-rose-500/10 text-rose-400 border border-rose-500/20 rounded font-semibold">
-                        {host.severity}
-                      </span>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 font-mono text-xs">
+              {report.compromised_hosts?.map((host, idx) => {
+                const isQuarantined = quarantinedIps.has(host.ip);
+                return (
+                  <div key={idx} className={`p-4 rounded-xl border transition-all ${
+                    isQuarantined ? 'bg-rose-950/20 border-rose-500/40' : 'bg-zinc-900/80 border-white/[0.08]'
+                  } flex items-center justify-between`}>
+                    <div>
+                      <div className="flex items-center gap-2.5">
+                        <span className="text-sm font-bold text-white">{host.ip}</span>
+                        <span className="px-2 py-0.5 text-[10px] font-bold uppercase rounded badge-rose">
+                          {host.severity}
+                        </span>
+                        {isQuarantined && (
+                          <span className="px-2 py-0.5 text-[10px] font-bold uppercase rounded bg-rose-600 text-white flex items-center gap-1">
+                            <Lock className="w-3 h-3" /> QUARANTINED
+                          </span>
+                        )}
+                      </div>
+                      <div className="text-xs text-zinc-400 mt-1.5 font-sans">
+                        Infection Ratio: <span className="text-rose-400 font-mono font-bold">{host.infection_ratio_pct}%</span> ({host.blocked_queries} / {host.total_queries} queries malicious)
+                      </div>
+                      <div className="text-[11px] text-zinc-400 mt-0.5">
+                        Threat Types: <span className="text-zinc-200">{host.threat_types?.join(', ')}</span>
+                      </div>
                     </div>
-                    <div className="text-[11px] text-zinc-400 mt-1">
-                      Infection Ratio: <span className="text-rose-400 font-semibold">{host.infection_ratio_pct}%</span> ({host.blocked_queries} / {host.total_queries} queries)
-                    </div>
-                    <div className="text-[10px] text-zinc-400 mt-0.5 truncate">
-                      Types: {host.threat_types?.join(', ')}
-                    </div>
+
+                    <button
+                      onClick={() => toggleQuarantine(host.ip)}
+                      className={`px-3 py-1.5 text-xs font-semibold rounded-lg transition border ${
+                        isQuarantined
+                          ? 'bg-zinc-800 hover:bg-zinc-700 text-zinc-300 border-white/10'
+                          : 'bg-rose-600/20 hover:bg-rose-600/30 text-rose-300 border-rose-500/30'
+                      }`}
+                    >
+                      {isQuarantined ? 'Release' : 'Quarantine'}
+                    </button>
                   </div>
-
-                  <button className="px-2.5 py-1 bg-zinc-800 hover:bg-zinc-700 text-zinc-200 text-[11px] font-medium rounded border border-white/10 transition">
-                    Quarantine
-                  </button>
-                </div>
-              ))}
+                );
+              })}
             </div>
           </div>
 
           {/* Sample Parsed Event Log */}
           <div>
-            <h3 className="text-xs font-semibold uppercase tracking-wider text-zinc-300 mb-2.5">
+            <h3 className="text-xs font-semibold uppercase tracking-wider text-white mb-3">
               Extracted Incident DNS Sessions
             </h3>
-            <div className="divide-y divide-white/[0.04] bg-zinc-900/60 rounded-lg border border-white/[0.06] max-h-52 overflow-y-auto font-mono text-xs">
-              {report.sample_events?.map((ev, i) => (
-                <div key={i} className="p-2.5 flex items-center justify-between hover:bg-white/[0.02]">
-                  <div className="flex items-center space-x-2.5">
-                    <span className={`w-1.5 h-1.5 rounded-full ${ev.verdict === 'BLOCK' ? 'bg-rose-500' : 'bg-emerald-400'}`} />
-                    <span className="text-zinc-200 font-medium">{ev.domain}</span>
-                    <span className="text-zinc-400 text-[10px]">({ev.client_ip})</span>
+            <div className="divide-y divide-white/[0.05] bg-[#0B0F19] rounded-xl border border-white/[0.08] max-h-56 overflow-y-auto font-mono text-xs">
+              {report.sample_events?.map((ev, i) => {
+                const isBlock = ev.verdict === 'BLOCK';
+                return (
+                  <div key={i} className="p-3 flex items-center justify-between hover:bg-white/[0.02] transition">
+                    <div className="flex items-center space-x-3">
+                      <span className={`w-2 h-2 rounded-full ${isBlock ? 'bg-rose-500' : 'bg-emerald-400'}`} />
+                      <span className="text-zinc-100 font-medium">{ev.domain}</span>
+                      <span className="text-zinc-400 text-[11px]">({ev.client_ip})</span>
+                    </div>
+                    <div className="flex items-center space-x-4">
+                      <span className={`text-[11px] ${isBlock ? 'text-rose-400' : 'text-emerald-400'}`}>
+                        {ev.threat_category}
+                      </span>
+                      <span className={`px-2.5 py-0.5 text-[10px] font-bold rounded uppercase ${
+                        isBlock ? 'badge-rose' : 'badge-emerald'
+                      }`}>
+                        {ev.verdict}
+                      </span>
+                    </div>
                   </div>
-                  <div className="flex items-center space-x-3">
-                    <span className={`text-[11px] ${ev.verdict === 'BLOCK' ? 'text-rose-400' : 'text-emerald-400'}`}>
-                      {ev.threat_category}
-                    </span>
-                    <span className={`px-2 py-0.5 text-[10px] font-semibold rounded border ${
-                      ev.verdict === 'BLOCK' ? 'bg-rose-500/10 text-rose-400 border-rose-500/20' : 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20'
-                    }`}>
-                      {ev.verdict}
-                    </span>
-                  </div>
-                </div>
-              ))}
+                );
+              })}
             </div>
           </div>
 
