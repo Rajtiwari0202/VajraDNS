@@ -1,8 +1,9 @@
 import React from 'react';
-import { Shield, Activity, Terminal, BarChart2, Database, FileSearch, Zap, CheckCircle2 } from 'lucide-react';
+import { Shield, Activity, Terminal, BarChart2, Database, FileSearch, Zap, BookOpen } from 'lucide-react';
 
 export default function Navbar({ activeTab, setActiveTab, isConnected, metrics }) {
   const tabs = [
+    { id: 'overview', label: 'Whitepaper & Specs', icon: BookOpen },
     { id: 'dashboard', label: 'SOC Console', icon: Activity },
     { id: 'playground', label: 'DNS Inspector & XAI', icon: Terminal },
     { id: 'analytics', label: 'Threat Metrics', icon: BarChart2 },
@@ -17,8 +18,11 @@ export default function Navbar({ activeTab, setActiveTab, isConnected, metrics }
         <div className="flex items-center justify-between h-16">
           
           {/* Logo & Product Meta */}
-          <div className="flex items-center space-x-3.5">
-            <div className="w-9 h-9 rounded-xl bg-blue-600/10 border border-blue-500/30 flex items-center justify-center text-blue-400 shadow-inner">
+          <div 
+            onClick={() => setActiveTab('overview')}
+            className="flex items-center space-x-3.5 cursor-pointer group"
+          >
+            <div className="w-9 h-9 rounded-xl bg-blue-600/10 border border-blue-500/30 flex items-center justify-center text-blue-400 shadow-inner group-hover:border-blue-400/50 transition">
               <Shield className="w-5 h-5" />
             </div>
             <div>
@@ -43,7 +47,7 @@ export default function Navbar({ activeTab, setActiveTab, isConnected, metrics }
                 <button
                   key={t.id}
                   onClick={() => setActiveTab(t.id)}
-                  className={`flex items-center space-x-2 px-3.5 py-1.5 rounded-lg text-xs font-medium transition-all ${
+                  className={`flex items-center space-x-2 px-3 py-1.5 rounded-lg text-xs font-medium transition-all ${
                     isActive
                       ? 'bg-blue-600 text-white font-semibold shadow-md shadow-blue-900/30'
                       : 'text-zinc-400 hover:text-zinc-100 hover:bg-white/[0.04]'

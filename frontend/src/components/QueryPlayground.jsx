@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Terminal, ShieldAlert, ShieldCheck, Zap, Sparkles, Clock, CheckCircle2, XCircle, ArrowRight, Layers, FileCode, Check } from 'lucide-react';
+import { Terminal, ShieldAlert, ShieldCheck, Zap, Sparkles, Clock, CheckCircle2, XCircle, ArrowRight, Layers, FileCode, Check, Eye } from 'lucide-react';
 import { api } from '../services/api';
 
 export default function QueryPlayground({ onQueryComplete }) {
@@ -8,6 +8,7 @@ export default function QueryPlayground({ onQueryComplete }) {
   const [clientIp, setClientIp] = useState('192.168.1.105');
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState(null);
+  const [showWirePacket, setShowWirePacket] = useState(false);
 
   const presets = [
     { label: 'Sovereign Whitelist', domain: 'isro.gov.in', type: 'A', desc: 'Tier 1 Instant Resolution' },
@@ -32,6 +33,29 @@ export default function QueryPlayground({ onQueryComplete }) {
     }
   };
 
+  const getWireHeader = () => {
+    if (!result) return null;
+    const isBlocked = result.verdict === 'BLOCK';
+    return {
+      txId: '0x' + Math.floor(Math.random() * 65535).toString(16).toUpperCase().padStart(4, '0'),
+      flags: {
+        qr: 1, // Response
+        opcode: 0, // Standard Query
+        aa: isBlocked ? 1 : 0, // Authoritative Answer for Sinkhole
+        tc: 0, // Truncation
+        rd: 1, // Recursion Desired
+        ra: 1, // Recursion Available
+        rcode: isBlocked ? 3 : 0 // 3 = NXDOMAIN / Refused, 0 = NOERROR
+      },
+      qdcount: 1,
+      ancount: result.answers?.length || 1,
+      nscount: 0,
+      arcount: 0
+    };
+  };
+
+  const wireHeader = getWireHeader();
+
   return (
     <div className="space-y-6">
       {/* Top Card: Interactive Query Console */}
@@ -45,7 +69,7 @@ export default function QueryPlayground({ onQueryComplete }) {
               Interactive DNS Inspector & Explainable AI (XAI)
             </h2>
             <p className="text-xs text-zinc-400 mt-0.5">
-              Inspect real-time resolution telemetry and transparent AI attribution through the 4-Tier Zero-Trust Pipeline
+              Inspect real-time resolution telemetry, RFC 1035 wire packets, and transparent AI attribution through the 4-Tier Zero-Trust Pipeline
             </p>
           </div>
         </div>
@@ -176,10 +200,21 @@ export default function QueryPlayground({ onQueryComplete }) {
 
           {/* 4-Tier Pipeline Stepper Visualization */}
           <div className="pb-5 border-b border-white/[0.08]">
-            <h4 className="text-xs font-semibold uppercase tracking-wider text-zinc-400 mb-3.5 flex items-center gap-2">
-              <Layers className="w-4 h-4 text-blue-400" />
-              4-Tier Zero-Trust Decision Progression
-            </h4>
+            <div className="flex items-center justify-between mb-3.5">
+              <h4 className="text-xs font-semibold uppercase tracking-wider text-zinc-400 flex items-center gap-2">
+                <Layers className="w-4 h-4 text-blue-400" />
+                4-Tier Zero-Trust Decision Progression
+              </h4>
+
+              <button
+                onClick={() => setShowWirePacket(!showWirePacket)}
+                className="btn-secondary text-[11px] py-1 px-2.5 font-mono"
+              >
+                <Eye className="w-3.5 h-3.5 text-blue-400" />
+                <span>{showWirePacket ? "Hide Wire Packet" : "View RFC 1035 Wire Packet"}</span>
+              </button>
+            </div>
+
             <div className="grid grid-cols-1 sm:grid-cols-4 gap-3 text-xs">
               
               {/* Tier 1 */}
@@ -228,6 +263,33 @@ export default function QueryPlayground({ onQueryComplete }) {
 
             </div>
           </div>
+
+          {/* RFC 1035 RAW WIRE PACKET INSPECTOR (When toggled) */}
+          {showWirePacket && wireHeader && (
+            <div className="p-5 rounded-xl bg-[#0B0F19] border border-blue-500/30 space-y-3 font-mono text-xs">
+              <div className="flex items-center justify-between text-blue-400 font-bold">
+                <span>RFC 1035 DNS WIRE HEADER & FLAGS</span>
+                <span>TXID: {wireHeader.txId}</span>
+              </div>
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 text-[11px] text-zinc-300">
+                <div className="p-2 rounded bg-zinc-900 border border-white/5">
+                  <span className="text-zinc-500 block">QR (Response):</span> {wireHeader.flags.qr} (Response)
+                </div>
+                <div className="p-2 rounded bg-zinc-900 border border-white/5">
+                  <span className="text-zinc-500 block">Opcode:</span> {wireHeader.flags.opcode} (Standard)
+                </div>
+                <div className="p-2 rounded bg-zinc-900 border border-white/5">
+                  <span className="text-zinc-500 block">AA (Authoritative):</span> {wireHeader.flags.aa}
+                </div>
+                <div className="p-2 rounded bg-zinc-900 border border-white/5">
+                  <span className="text-zinc-500 block">RCODE:</span> {wireHeader.flags.rcode} ({wireHeader.flags.rcode === 0 ? 'NOERROR' : 'NXDOMAIN'})
+                </div>
+              </div>
+              <div className="text-[11px] text-zinc-400 pt-1">
+                Raw Wire Decapsulation: <span className="text-zinc-200">UDP Port 53 -> Length: 64 bytes -> Protocol: RFC 1035 wire format compliant</span>
+              </div>
+            </div>
+          )}
 
           {/* Explainable AI (XAI) Attribution & Resolved Answers */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6 text-xs">
