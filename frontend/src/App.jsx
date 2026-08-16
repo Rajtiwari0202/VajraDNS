@@ -42,7 +42,7 @@ export default function App() {
   }, []);
 
   return (
-    <div className="min-h-screen bg-[#080C14] text-slate-100 flex flex-col font-sans">
+    <div className="min-h-screen bg-[#090B10] text-slate-100 flex flex-col font-sans selection:bg-blue-600 selection:text-white">
       {/* Top Navbar */}
       <Navbar
         activeTab={activeTab}
@@ -52,13 +52,13 @@ export default function App() {
       />
 
       {/* Main Content Area */}
-      <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8">
+      <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-6">
         
         {/* TAB 1: SOC DASHBOARD (Unified View) */}
         {activeTab === 'dashboard' && (
-          <div className="space-y-8">
+          <div className="space-y-6">
             <ThreatAnalytics metrics={metrics} />
-            <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
+            <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
               <div className="lg:col-span-8">
                 <LiveThreatTicker queries={queries} onSelectQuery={setSelectedQuery} />
               </div>
@@ -91,7 +91,7 @@ export default function App() {
 
         {/* TAB 6: ATTACK SIMULATOR */}
         {activeTab === 'simulator' && (
-          <div className="space-y-8">
+          <div className="space-y-6">
             <AttackSimulator onAttackTriggered={() => {}} />
             <LiveThreatTicker queries={queries} onSelectQuery={setSelectedQuery} />
           </div>
@@ -102,65 +102,65 @@ export default function App() {
       {/* Query Detail Modal / Drawer for XAI Attribution */}
       {selectedQuery && (
         <div className="fixed inset-0 bg-black/70 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-          <div className="bg-[#0D1322] border border-gray-800 rounded-2xl max-w-2xl w-full p-6 shadow-2xl space-y-4 font-mono">
-            <div className="flex items-center justify-between pb-4 border-b border-gray-800">
+          <div className="surface-card max-w-2xl w-full p-6 shadow-2xl space-y-4">
+            <div className="flex items-center justify-between pb-4 border-b border-white/[0.06]">
               <div className="flex items-center space-x-3">
-                <span className={`px-2.5 py-1 text-xs font-bold uppercase rounded ${
-                  selectedQuery.verdict === 'BLOCK' ? 'bg-red-500 text-white' : 'bg-emerald-500 text-white'
+                <span className={`px-2 py-0.5 text-xs font-mono font-semibold uppercase rounded border ${
+                  selectedQuery.verdict === 'BLOCK' ? 'bg-rose-500/10 text-rose-400 border-rose-500/20' : 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20'
                 }`}>
                   {selectedQuery.verdict}: {selectedQuery.action}
                 </span>
-                <span className="text-base font-bold text-gray-100">{selectedQuery.domain}</span>
+                <span className="text-sm font-mono font-semibold text-zinc-100">{selectedQuery.domain}</span>
               </div>
               <button
                 onClick={() => setSelectedQuery(null)}
-                className="p-1 rounded-lg bg-gray-900 text-gray-400 hover:text-white"
+                className="p-1 rounded-lg bg-zinc-900 text-zinc-400 hover:text-white"
               >
-                <X className="w-5 h-5" />
+                <X className="w-4 h-4" />
               </button>
             </div>
 
-            <div className="grid grid-cols-2 gap-4 text-xs">
-              <div className="p-3 bg-gray-950 rounded-xl border border-gray-800">
-                <span className="text-gray-500 block mb-1">DECISION STAGE</span>
-                <span className="text-gray-200 font-bold">{selectedQuery.tier}</span>
+            <div className="grid grid-cols-2 gap-3 text-xs font-mono">
+              <div className="p-3 bg-zinc-900/80 rounded-lg border border-white/[0.04]">
+                <span className="text-zinc-400 text-[10px] block mb-1">DECISION STAGE</span>
+                <span className="text-zinc-200 font-semibold">{selectedQuery.tier}</span>
               </div>
-              <div className="p-3 bg-gray-950 rounded-xl border border-gray-800">
-                <span className="text-gray-500 block mb-1">THREAT CATEGORY</span>
-                <span className={selectedQuery.verdict === 'BLOCK' ? 'text-red-400 font-bold' : 'text-emerald-400 font-bold'}>
+              <div className="p-3 bg-zinc-900/80 rounded-lg border border-white/[0.04]">
+                <span className="text-zinc-400 text-[10px] block mb-1">THREAT CLASSIFICATION</span>
+                <span className={selectedQuery.verdict === 'BLOCK' ? 'text-rose-400 font-semibold' : 'text-emerald-400 font-semibold'}>
                   {selectedQuery.threat_category}
                 </span>
               </div>
-              <div className="p-3 bg-gray-950 rounded-xl border border-gray-800">
-                <span className="text-gray-500 block mb-1">RESPONSE LATENCY</span>
-                <span className="text-emerald-400 font-bold">{selectedQuery.latency_ms} ms</span>
+              <div className="p-3 bg-zinc-900/80 rounded-lg border border-white/[0.04]">
+                <span className="text-zinc-400 text-[10px] block mb-1">LATENCY SLA</span>
+                <span className="text-emerald-400 font-semibold">{selectedQuery.latency_ms} ms</span>
               </div>
-              <div className="p-3 bg-gray-950 rounded-xl border border-gray-800">
-                <span className="text-gray-500 block mb-1">CLIENT SOURCE IP</span>
-                <span className="text-gray-300 font-bold">{selectedQuery.client_ip}</span>
+              <div className="p-3 bg-zinc-900/80 rounded-lg border border-white/[0.04]">
+                <span className="text-zinc-400 text-[10px] block mb-1">CLIENT SOURCE IP</span>
+                <span className="text-zinc-300 font-semibold">{selectedQuery.client_ip}</span>
               </div>
             </div>
 
             {/* XAI Explanation */}
-            <div className="p-4 bg-gray-950 rounded-xl border border-gray-800">
-              <span className="text-xs text-indigo-400 font-bold flex items-center gap-1.5 mb-2">
-                <Sparkles className="w-4 h-4" /> Explainable AI (XAI) Reasoning
+            <div className="p-3.5 bg-zinc-900/80 rounded-lg border border-white/[0.04]">
+              <span className="text-xs text-blue-400 font-semibold flex items-center gap-1.5 mb-1.5">
+                <Sparkles className="w-3.5 h-3.5" /> Explainable AI (XAI) Feature Attribution
               </span>
-              <p className="text-xs text-gray-300 leading-relaxed">
+              <p className="text-xs font-mono text-zinc-300 leading-relaxed bg-zinc-950 p-2.5 rounded border border-white/[0.04]">
                 {selectedQuery.xai_explanation}
               </p>
             </div>
 
             {/* Resolved IP List */}
-            <div className="p-4 bg-gray-950 rounded-xl border border-gray-800">
-              <span className="text-xs text-blue-400 font-bold flex items-center gap-1.5 mb-2">
-                <Clock className="w-4 h-4" /> Returned DNS Answers (TTL: {selectedQuery.ttl}s)
+            <div className="p-3.5 bg-zinc-900/80 rounded-lg border border-white/[0.04]">
+              <span className="text-xs text-zinc-300 font-semibold flex items-center gap-1.5 mb-1.5 font-mono">
+                <Clock className="w-3.5 h-3.5 text-zinc-500" /> Resolved DNS Wire Records (TTL: {selectedQuery.ttl}s)
               </span>
-              <div className="space-y-1">
+              <div className="space-y-1 font-mono">
                 {selectedQuery.answers?.map((ans, i) => (
-                  <div key={i} className="flex justify-between px-3 py-1.5 bg-gray-900 rounded text-xs">
-                    <span className="text-gray-400">{selectedQuery.domain}</span>
-                    <span className={selectedQuery.verdict === 'BLOCK' ? 'text-red-400 font-bold' : 'text-emerald-400 font-bold'}>
+                  <div key={i} className="flex justify-between px-3 py-1.5 bg-zinc-950 rounded text-xs border border-white/[0.03]">
+                    <span className="text-zinc-400">{selectedQuery.domain}.</span>
+                    <span className={selectedQuery.verdict === 'BLOCK' ? 'text-rose-400 font-semibold' : 'text-emerald-400 font-semibold'}>
                       {ans}
                     </span>
                   </div>
@@ -168,12 +168,12 @@ export default function App() {
               </div>
             </div>
 
-            <div className="pt-2 text-right">
+            <div className="pt-1 text-right">
               <button
                 onClick={() => setSelectedQuery(null)}
-                className="px-4 py-2 bg-gray-800 hover:bg-gray-700 text-gray-200 text-xs font-semibold rounded-xl"
+                className="px-3.5 py-1.5 bg-zinc-800 hover:bg-zinc-700 text-zinc-200 text-xs font-medium rounded-lg border border-white/10"
               >
-                Close Window
+                Close
               </button>
             </div>
           </div>
@@ -181,8 +181,8 @@ export default function App() {
       )}
 
       {/* Footer */}
-      <footer className="border-t border-gray-900 bg-[#080C14] py-6 text-center text-xs font-mono text-gray-500">
-        <p>VajraDNS — Autonomous AI Threat Defense Gateway • Built for SIH1524 (ISRO / Space Technology)</p>
+      <footer className="border-t border-white/[0.06] bg-[#090B10] py-4 text-center text-[11px] font-mono text-zinc-400">
+        <p>VajraDNS — Sovereign Autonomous AI Threat Defense Gateway • SIH1524 (ISRO / Space Technology)</p>
       </footer>
     </div>
   );

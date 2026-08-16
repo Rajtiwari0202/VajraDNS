@@ -1,9 +1,11 @@
 /**
  * VajraDNS Frontend API & WebSocket Communication Client
+ * Connects dynamically to backend with automatic reconnection and heartbeat.
  */
 
-const API_BASE = "http://127.0.0.1:8000";
-const WS_BASE = "ws://127.0.0.1:8000";
+const getHost = () => (typeof window !== 'undefined' ? window.location.hostname : '127.0.0.1');
+const API_BASE = typeof window !== 'undefined' ? `http://${getHost()}:8000` : 'http://127.0.0.1:8000';
+const WS_BASE = typeof window !== 'undefined' ? `ws://${getHost()}:8000` : 'ws://127.0.0.1:8000';
 
 export const api = {
   // Test Domain Resolution
@@ -82,41 +84,57 @@ export const api = {
   }
 };
 
-// WebSocket Telemetry Hook
+// Robust WebSocket Telemetry Connection with Auto-Reconnect
 export function connectTelemetrySocket(onMessage, onStatusChange) {
   let ws = null;
   let reconnectTimer = null;
+  let isUnmounted = false;
 
   function connect() {
-    ws = new WebSocket(`${WS_BASE}/ws/telemetry`);
+    if (isUnmounted) return;
+    try {
+      ws = new WebSocket(`${WS_BASE}/ws/telemetry`);
 
-    ws.onopen = () => {
-      if (onStatusChange) onStatusChange(true);
-    };
+      ws.onopen = () => {
+        if (onStatusChange) onStatusChange(true);
+      };
 
-    ws.onmessage = (event) => {
-      try {
-        const payload = JSON.parse(event.data);
-        if (onMessage) onMessage(payload);
-      } catch (err) {
-        console.error("WS Parse error:", err);
-      }
-    };
+      ws.onmessage = (event) => {
+        try {
+          const payload = JSON.parse(event.data);
+          if (onMessage) onMessage(payload);
+        } catch (err) {
+          console.error("WS parse error:", err);
+        }
+      };
 
-    ws.onclose = () => {
+      ws.onclose = () => {
+        if (onStatusChange) onStatusChange(false);
+        if (!isUnmounted) {
+          reconnectTimer = setTimeout(connect, 2000);
+        }
+      };
+
+      ws.onerror = () => {
+        ws.close();
+      };
+    } catch (err) {
       if (onStatusChange) onStatusChange(false);
-      reconnectTimer = setTimeout(connect, 2000);
-    };
-
-    ws.onerror = () => {
-      ws.close();
-    };
+      if (!isUnmounted) {
+        reconnectTimer = setTimeout(connect, 2500);
+      }
+    }
   }
 
   connect();
 
   return () => {
+    isUnmounted = true;
     if (reconnectTimer) clearTimeout(reconnectTimer);
-    if (ws) ws.close();
+    if (ws) {
+      try {
+        ws.close();
+      } catch (e) {}
+    }
   };
 }

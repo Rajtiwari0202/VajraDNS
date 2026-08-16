@@ -1,8 +1,8 @@
 import React, { useState } from 'react';
-import { ShieldAlert, ShieldCheck, Clock, Globe, Info, Filter, ArrowUpRight, Cpu, Radio } from 'lucide-react';
+import { ShieldAlert, ShieldCheck, Clock, Search, Filter, ArrowUpRight } from 'lucide-react';
 
 export default function LiveThreatTicker({ queries = [], onSelectQuery }) {
-  const [filter, setFilter] = useState('ALL'); // ALL, BLOCKED, ALLOWED
+  const [filter, setFilter] = useState('ALL');
   const [search, setSearch] = useState('');
 
   const filteredQueries = queries.filter(q => {
@@ -13,65 +13,68 @@ export default function LiveThreatTicker({ queries = [], onSelectQuery }) {
   });
 
   return (
-    <div className="bg-[#0D1322] border border-gray-800/80 rounded-2xl p-5 shadow-xl">
+    <div className="surface-card p-5">
       {/* Header & Controls */}
-      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 pb-4 border-b border-gray-800">
-        <div className="flex items-center space-x-3">
-          <div className="p-2 rounded-lg bg-blue-500/10 text-blue-400 border border-blue-500/20">
-            <Radio className="w-5 h-5 animate-pulse" />
-          </div>
-          <div>
-            <h2 className="text-base font-bold text-gray-100 flex items-center gap-2">
+      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 pb-4 mb-3 border-b border-white/[0.06]">
+        <div>
+          <div className="flex items-center space-x-2">
+            <h2 className="text-xs font-semibold uppercase tracking-wider text-zinc-200">
               Live DNS Threat Stream
-              <span className="px-2 py-0.5 text-xs font-mono bg-gray-800 text-gray-300 rounded-full">
-                {filteredQueries.length} Events
-              </span>
             </h2>
-            <p className="text-xs text-gray-400">Real-time 4-Tier Zero-Trust query telemetry</p>
+            <span className="text-[10px] font-mono px-1.5 py-0.5 rounded bg-zinc-800 text-zinc-300 border border-white/10">
+              {filteredQueries.length} Events
+            </span>
           </div>
+          <p className="text-[11px] text-zinc-400 mt-0.5">Real-time 4-Tier Zero-Trust query telemetry</p>
         </div>
 
-        {/* Filter Pills */}
+        {/* Search & Segmented Filter */}
         <div className="flex items-center space-x-2 w-full sm:w-auto">
-          <input
-            type="text"
-            placeholder="Search domain..."
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            className="px-3 py-1.5 bg-gray-900/90 border border-gray-700/60 rounded-lg text-xs font-mono text-gray-200 placeholder-gray-500 focus:outline-none focus:border-blue-500 w-full sm:w-44"
-          />
-          <button
-            onClick={() => setFilter('ALL')}
-            className={`px-3 py-1.5 rounded-lg text-xs font-medium transition ${
-              filter === 'ALL' ? 'bg-gray-700 text-white' : 'text-gray-400 hover:text-white bg-gray-900'
-            }`}
-          >
-            All
-          </button>
-          <button
-            onClick={() => setFilter('BLOCKED')}
-            className={`px-3 py-1.5 rounded-lg text-xs font-medium transition ${
-              filter === 'BLOCKED' ? 'bg-red-600/30 text-red-400 border border-red-500/40' : 'text-gray-400 hover:text-red-400 bg-gray-900'
-            }`}
-          >
-            Blocked
-          </button>
-          <button
-            onClick={() => setFilter('ALLOWED')}
-            className={`px-3 py-1.5 rounded-lg text-xs font-medium transition ${
-              filter === 'ALLOWED' ? 'bg-emerald-600/30 text-emerald-400 border border-emerald-500/40' : 'text-gray-400 hover:text-emerald-400 bg-gray-900'
-            }`}
-          >
-            Allowed
-          </button>
+          <div className="relative w-full sm:w-48">
+            <Search className="w-3.5 h-3.5 text-zinc-500 absolute left-2.5 top-2.5" />
+            <input
+              type="text"
+              placeholder="Search domain..."
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              className="w-full pl-8 pr-3 py-1.5 bg-zinc-900 border border-white/10 rounded-lg text-xs font-mono text-zinc-200 placeholder-zinc-500 focus:outline-none focus:border-zinc-500"
+            />
+          </div>
+
+          <div className="flex items-center p-0.5 bg-zinc-900 rounded-lg border border-white/[0.06] text-xs">
+            <button
+              onClick={() => setFilter('ALL')}
+              className={`px-2.5 py-1 rounded-md transition ${
+                filter === 'ALL' ? 'bg-zinc-800 text-white font-medium shadow-sm' : 'text-zinc-400 hover:text-white'
+              }`}
+            >
+              All
+            </button>
+            <button
+              onClick={() => setFilter('BLOCKED')}
+              className={`px-2.5 py-1 rounded-md transition ${
+                filter === 'BLOCKED' ? 'bg-rose-500/20 text-rose-300 font-medium' : 'text-zinc-400 hover:text-rose-400'
+              }`}
+            >
+              Blocked
+            </button>
+            <button
+              onClick={() => setFilter('ALLOWED')}
+              className={`px-2.5 py-1 rounded-md transition ${
+                filter === 'ALLOWED' ? 'bg-emerald-500/20 text-emerald-300 font-medium' : 'text-zinc-400 hover:text-emerald-400'
+              }`}
+            >
+              Allowed
+            </button>
+          </div>
         </div>
       </div>
 
-      {/* Query Stream List */}
-      <div className="divide-y divide-gray-800/60 max-h-[520px] overflow-y-auto mt-2 font-mono">
+      {/* Query Stream List Table */}
+      <div className="divide-y divide-white/[0.04] max-h-[460px] overflow-y-auto">
         {filteredQueries.length === 0 ? (
-          <div className="py-12 text-center text-gray-500 text-xs">
-            No DNS telemetry events found. Run the attack simulator or test a query to view live streaming logs.
+          <div className="py-12 text-center text-zinc-500 text-xs font-mono">
+            No DNS events matching filter. Run the attack simulator or query a domain to view live logs.
           </div>
         ) : (
           filteredQueries.map((q, idx) => {
@@ -80,58 +83,55 @@ export default function LiveThreatTicker({ queries = [], onSelectQuery }) {
               <div
                 key={idx}
                 onClick={() => onSelectQuery && onSelectQuery(q)}
-                className="py-3 px-2 rounded-lg flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 hover:bg-gray-800/40 cursor-pointer transition group"
+                className="py-2.5 px-2 rounded-lg flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 hover:bg-white/[0.02] cursor-pointer transition group"
               >
-                {/* Left: Verdict & Domain */}
+                {/* Left: Domain, Type & Threat info */}
                 <div className="flex items-center space-x-3 min-w-0 flex-1">
-                  <div className={`p-1.5 rounded-lg flex-shrink-0 ${
-                    isBlock ? 'bg-red-500/10 text-red-400 border border-red-500/20' : 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20'
+                  <div className={`p-1 rounded-md flex-shrink-0 ${
+                    isBlock ? 'bg-rose-500/10 text-rose-400 border border-rose-500/20' : 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20'
                   }`}>
-                    {isBlock ? <ShieldAlert className="w-4 h-4" /> : <ShieldCheck className="w-4 h-4" />}
+                    {isBlock ? <ShieldAlert className="w-3.5 h-3.5" /> : <ShieldCheck className="w-3.5 h-3.5" />}
                   </div>
 
                   <div className="min-w-0 flex-1">
-                    <div className="flex items-center space-x-2">
-                      <span className="text-sm font-semibold text-gray-200 truncate group-hover:text-blue-400 transition">
+                    <div className="flex items-center space-x-2 font-mono">
+                      <span className="text-xs font-medium text-zinc-200 truncate group-hover:text-blue-400 transition">
                         {q.domain}
                       </span>
-                      <span className="text-[10px] px-1.5 py-0.5 rounded bg-gray-800 text-gray-400 border border-gray-700">
+                      <span className="text-[10px] px-1 py-0.2 rounded bg-zinc-800/80 text-zinc-400 border border-white/5">
                         {q.query_type || 'A'}
                       </span>
-                      <span className="text-[10px] px-1.5 py-0.5 rounded bg-gray-800 text-gray-400 border border-gray-700 hidden sm:inline">
+                      <span className="text-[10px] px-1 py-0.2 rounded bg-zinc-800/80 text-zinc-400 border border-white/5 hidden sm:inline">
                         {q.protocol || 'Do53'}
                       </span>
                     </div>
 
-                    <div className="flex items-center space-x-2 text-[11px] text-gray-400 mt-0.5">
-                      <span className={isBlock ? 'text-red-400 font-medium' : 'text-emerald-400'}>
+                    <div className="flex items-center space-x-2 text-[11px] text-zinc-400 mt-0.5">
+                      <span className={isBlock ? 'text-rose-400' : 'text-emerald-400'}>
                         {q.threat_category}
                       </span>
                       <span>•</span>
-                      <span className="text-gray-500 truncate">{q.tier}</span>
+                      <span className="text-zinc-500 truncate">{q.tier}</span>
                     </div>
                   </div>
                 </div>
 
-                {/* Right: Latency & Telemetry */}
-                <div className="flex items-center space-x-4 self-end sm:self-center flex-shrink-0 text-xs">
+                {/* Right: Latency, Client IP & Verdict */}
+                <div className="flex items-center space-x-3 self-end sm:self-center flex-shrink-0 font-mono text-xs">
                   <div className="text-right">
-                    <div className="flex items-center justify-end space-x-1 text-gray-300">
-                      <Clock className="w-3 h-3 text-gray-500" />
-                      <span className={`font-semibold ${q.latency_ms < 20 ? 'text-emerald-400' : 'text-yellow-400'}`}>
-                        {q.latency_ms}ms
-                      </span>
-                    </div>
-                    <span className="text-[10px] text-gray-500">{q.client_ip}</span>
+                    <span className={`font-medium ${q.latency_ms < 25 ? 'text-emerald-400' : 'text-zinc-300'}`}>
+                      {q.latency_ms}ms
+                    </span>
+                    <span className="text-[10px] text-zinc-400 block">{q.client_ip}</span>
                   </div>
 
-                  <span className={`px-2 py-1 text-[10px] uppercase font-bold tracking-wider rounded ${
-                    isBlock ? 'bg-red-500/20 text-red-400 border border-red-500/30' : 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/30'
+                  <span className={`px-2 py-0.5 text-[10px] uppercase font-semibold rounded border ${
+                    isBlock ? 'bg-rose-500/10 text-rose-400 border-rose-500/20' : 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20'
                   }`}>
                     {q.action || q.verdict}
                   </span>
 
-                  <ArrowUpRight className="w-4 h-4 text-gray-600 group-hover:text-blue-400 transition" />
+                  <ArrowUpRight className="w-3.5 h-3.5 text-zinc-600 group-hover:text-zinc-300 transition" />
                 </div>
               </div>
             );
