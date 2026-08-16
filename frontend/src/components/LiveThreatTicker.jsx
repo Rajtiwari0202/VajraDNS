@@ -70,14 +70,14 @@ export default function LiveThreatTicker({ queries = [], onSelectQuery }) {
 
         {/* Search & Segmented Filter */}
         <div className="flex items-center space-x-3 w-full sm:w-auto">
-          <div className="relative w-full sm:w-52">
-            <Search className="w-4 h-4 text-zinc-500 absolute left-3 top-2.5" />
+          <div className="relative w-full sm:w-60">
+            <Search className="w-4 h-4 text-zinc-400 absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" />
             <input
               type="text"
               placeholder="Search domain..."
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              className="w-full pl-9 pr-3 py-1.5 input-clean text-xs font-mono"
+              className="w-full pl-9 pr-3 py-1.5 bg-[#0B0F19] border border-white/10 rounded-lg text-xs font-mono text-zinc-100 placeholder-zinc-500 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500/20 transition"
             />
           </div>
 
