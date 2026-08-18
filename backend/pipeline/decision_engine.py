@@ -84,6 +84,14 @@ class DecisionEngine:
         if domain_lower in SOVEREIGN_AUTHORITATIVE_MAP:
             return SOVEREIGN_AUTHORITATIVE_MAP[domain_lower]
 
+        # Instant resolution for subdomains of sovereign assets (e.g. telemetry.ursc.gov.in -> ursc.gov.in / isro.gov.in)
+        for parent_dom, ips in SOVEREIGN_AUTHORITATIVE_MAP.items():
+            if domain_lower.endswith('.' + parent_dom):
+                return ips
+
+        if domain_lower.endswith('.gov.in') or domain_lower.endswith('.nic.in') or domain_lower.endswith('.res.in'):
+            return ["115.112.238.106"]
+
         try:
             answers = self.resolver.resolve(domain, rtype)
             return [str(rdata) for rdata in answers]

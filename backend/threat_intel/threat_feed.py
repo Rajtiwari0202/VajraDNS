@@ -86,15 +86,18 @@ class ThreatIntelligenceManager:
 
     def is_whitelisted(self, domain: str) -> bool:
         """Checks if domain or any of its parent domains are whitelisted."""
-        domain = domain.lower().strip()
+        domain = domain.lower().strip().rstrip('.')
         if domain in self.whitelist_exact:
             return True
-        # Check domain hierarchy (e.g., 'sub.isro.gov.in' -> 'isro.gov.in')
+        # Check domain hierarchy (e.g., 'telemetry.ursc.gov.in' -> 'ursc.gov.in' -> 'gov.in')
         parts = domain.split('.')
-        for i in range(1, len(parts) - 1):
+        for i in range(1, len(parts)):
             parent = '.'.join(parts[i:])
             if parent in self.whitelist_exact:
                 return True
+        # Sovereign root SLD check for Indian space, defense and government subnets
+        if domain.endswith('.gov.in') or domain.endswith('.nic.in') or domain.endswith('.mil.in') or domain.endswith('.res.in'):
+            return True
         return False
 
     def check_threat_intel(self, domain: str) -> Optional[Dict[str, Any]]:
