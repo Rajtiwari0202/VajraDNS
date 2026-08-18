@@ -45,6 +45,13 @@ yarn-error.log*
 .DS_Store
 Thumbs.db
 
+# Office & Raw Scratch Files
+*.pptx
+*.xlsx
+*.docx
+backend/extract_pptx.py
+backend/generate_sih_presentation.py
+
 # Logs & Temporary Files
 *.log
 scratch/
